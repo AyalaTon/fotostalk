@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="stylesheet" type="text/css" href="/styles.css">
+    <meta charset="UTF-8">
+    <script src="https://use.fontawesome.com/3a2eaf6206.js"></script>
+    <title>Fotostalk</title>
+</head>
+<body onload="loadUsers(); console.log('Usuario activo: ' + window.localStorage.getItem('activeUser')); cargarPosts();">
+    <header>
+        <h1 id="titulo">FOTOSTALK</h1>
+        <img id="fotoUsuarioActual" src="perfil.png" alt="fotoPerfil">
+    </header>
+    <section id="container">
+        <article id="uploadImage">
+            <h1 id="userActivo">User</h1>
+            <img src="noImagen.jpg" id="imagenASubir" alt="imagenParaSubir">
+            <form action="upload.php" method="post" onsubmit="document.getElementById('publicar').click();return false;">
+                <label for="descripcion">Descripción</label>
+                <input type="text" id="descripcion" name="descripcion" placeholder="descripción" autocomplete="off"><br>
+                <label for="imagen">Imagen</label>
+                <input type="file" id="file" name="file" placeholder="imagen" autocomplete="off" onchange="cargarImagen()"><br>
+                <button id="publicar" type="button" class="publicar" onclick="uploadImage()">Publicar</button>
+            </form>
+        </article>
+        <section id="posts">
+            <!-- <h1>Posts</h1>  -->
+        </section>
+    </section>
+    <aside id="amigos">
+        <h1>Usuarios</h1>
+        <hr>
+        <ul id="users"> </ul>
+    </aside>
+    <script src="script.js"></script>
+</body>
+</html>
