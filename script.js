@@ -12,6 +12,7 @@ function loadUsers(){
             document.getElementById("userActivo").textContent = getlocalUser;
         } else {
             document.getElementById("userActivo").textContent = authors[0].name;
+            localStorage.setItem("activeUser", authors[0].name);
         }
         return authors.map(function(author) {
             let li = createNode('li');
@@ -77,6 +78,8 @@ function uploadImage(){
         window.localStorage.setItem('fotos', JSON.stringify(arrayFotos));
         // append(post, foto);
         section.insertBefore(postNuevo, section.firstChild);
+        document.getElementById("descripcion").value = "";
+        document.getElementById("imagenASubir").src = "noImagen.jpg";
         // append(section, post);
     } else { // Si no existe el array de fotos
         console.log("NOOO EXISTE EL ARRAY");
@@ -90,10 +93,12 @@ function uploadImage(){
             comentarios : []
         }
         var postNuevo = crearPost(publication.id);
-
+        
         append(section, postNuevo);
         arrayFotos.push(publication);
         window.localStorage.setItem('fotos', JSON.stringify(arrayFotos));
+        document.getElementById("descripcion").value = "";
+        document.getElementById("imagenASubir").src = "noImagen.jpg";
     }
 }
 
@@ -167,12 +172,82 @@ function cargarPosts(){
                     fav.className = 'heart_animate';
                     let nuevoArray = darLike(idPublicacion);
                     window.localStorage.setItem('fotos', JSON.stringify(nuevoArray));
-                    // console.log(JSON.parse(window.localStorage.getItem('fotos')));
+                    // Agrego de forma temporal el like (cuando recargue la pagina aparecera bien) Solo para evitar el reload
+                    // Solo para cuando no tiene likes
+                    let listadeFavs = this.parentNode.getElementsByTagName('ul')[0];
+                    let itemsMegusta = listadeFavs.firstChild;
+                    let SegundoItem = itemsMegusta.nextSibling;
+                    if(SegundoItem.className == "nadie"){
+                        SegundoItem.textContent = localStorage.getItem("activeUser");
+                    } else {
+                        // Solo para cuando tiene likes
+                        for(likes of listadeFavs.children){
+                            console.log(likes.textContent);
+                            if(likes.textContent.trim() == "les gusta esto" || likes.textContent.trim() == "le gusta esto"){
+                                console.log("llegue al final");
+                                listadeFavs.removeChild(listadeFavs.lastChild);
+                                // remove(likes);
+                                break;
+                                // listadeFavs.textContent = localStorage.getItem("activeUser");
+                            }
+                        }
+                        listadeFavs.lastChild.className = "liFav";
+                        let nuevoLike = createNode('li');
+                        nuevoLike.textContent = localStorage.getItem("activeUser");
+                        nuevoLike.className = "liFavAnteUltimo";
+                        append(listadeFavs, nuevoLike);
+                        let nuevoLike2 = createNode('li');
+                        nuevoLike2.textContent = " les gusta esto";
+                        nuevoLike2.className = "liFavUltimo";
+                        append(listadeFavs, nuevoLike2);
+                    }
+                    // append(listadeFavs, createNode('li', localStorage.getItem("activeUser")));
                 } else { // Si esta marcado (ME GUSTA)
                     console.log("CLICK EN NO ME GUSTA");
                     fav.className = 'fav';
                     let nuevoArray = quitarLike(idPublicacion);
                     window.localStorage.setItem('fotos', JSON.stringify(nuevoArray));
+                    // Quito de forma temporal el like (cuando recargue la pagina aparecera bien) Solo para evitar el reload
+                    // Solo para cuando tiene su propio like
+                    let listadeFavs = this.parentNode.getElementsByTagName('ul')[0];
+                    let itemsMegusta = listadeFavs.firstChild;
+                    let SegundoItem = itemsMegusta.nextSibling;
+                    console.log(SegundoItem.textContent.trim());
+                    console.log(localStorage.getItem("activeUser"));
+                    if(SegundoItem.textContent.trim() == localStorage.getItem("activeUser")){
+                        if(listadeFavs.children.length == 3){
+                            SegundoItem.textContent = "nadie";
+                            SegundoItem.className = "nadie";
+                        } else {
+                            listadeFavs.removeChild(SegundoItem);
+                        }
+                    }
+                    // Solo para cuando tiene likes ##############################################################################################
+                    for(likes of listadeFavs.children){
+                        console.log(likes.textContent);
+                        if(likes.textContent.trim() == localStorage.getItem("activeUser")){
+                            console.log("LO ENCONTRE ES: " + likes.textContent);
+                            console.log(likes.className);
+                            if(likes.className == "liFav"){
+                                listadeFavs.removeChild(likes);
+                                // remove(likes);
+                                break;
+                                // listadeFavs.textContent = localStorage.getItem("activeUser");
+                            } else if(likes.className == "liFavAnteUltimo"){
+                                likes.previousElementSibling.className = "liFavAnteUltimo";
+                                likes.previousElementSibling.textContent = likes.previousElementSibling.textContent.trim() + " ";
+                                console.log(likes.previousElementSibling.textContent);
+                                listadeFavs.removeChild(likes);
+
+                                if(listadeFavs.children.length == 3){
+                                    listadeFavs.lastChild.textContent = "le gusta esto";
+                                    // listadeFavs.removeChild(listadeFavs.lastChild);
+                                }
+                            }
+                        }
+                    }
+
+
                 }
             }
             let imgcomment = createNode('img');
@@ -210,7 +285,7 @@ function cargarPosts(){
                 li2.textContent = "le gusta esto";
                 append(listFavs, li2);
 
-            } else{
+            } else {
                 for(let i = 0; i < element.megustas.length; i++){
                     let li = createNode('li');
                     li.className = 'liFav';
@@ -251,6 +326,8 @@ function cargarPosts(){
             let listComentarios = createNode('ul');
             listComentarios.id = 'listComentarios';
             listComentarios.className = 'listComentarios';
+            append(comentarios2, listComentarios);
+            append(footer, comentarios2);
             if(element.comentarios.length > 0){
                 for(let i = 0; i < element.comentarios.length; i++){
                     let li = createNode('li');
@@ -268,8 +345,7 @@ function cargarPosts(){
                     append(li, comentarioText);
                     append(listComentarios, li);
                 }
-                append(comentarios2, listComentarios);
-                append(footer, comentarios2);
+                
             }
             let crearComentario = createNode('input');
             crearComentario.type = 'text';
@@ -364,11 +440,26 @@ function crearPost(id){
             fav.className = 'heart_animate';
             let nuevoArray = darLike(idPublicacion);
             window.localStorage.setItem('fotos', JSON.stringify(nuevoArray));
+            // Agrego de forma temporal el like (cuando recargue la pagina aparecera bien) Solo para evitar el reload
+            // Solo para cuando no tiene likes
+            let listadeFavs = this.parentNode.getElementsByTagName('ul')[0];
+            let itemsMegusta = listadeFavs.firstChild;
+            let SegundoItem = itemsMegusta.nextSibling;
+            if(SegundoItem.className == "nadie"){
+                SegundoItem.textContent = localStorage.getItem("activeUser");
+            }
         } else { // Si esta marcado (ME GUSTA)
             console.log("CLICK EN NO ME GUSTA");
             fav.className = 'fav';
             let nuevoArray = quitarLike(idPublicacion);
             window.localStorage.setItem('fotos', JSON.stringify(nuevoArray));
+            // Quito de forma temporal el like (cuando recargue la pagina aparecera bien) Solo para evitar el reload
+            let listadeFavs = this.parentNode.getElementsByTagName('ul')[0];
+            let itemsMegusta = listadeFavs.firstChild;
+            let SegundoItem = itemsMegusta.nextSibling;
+            if(SegundoItem.textContent == localStorage.getItem("activeUser")){
+                SegundoItem.textContent = "nadie";
+            }
         }
     }
     let comment = createNode('article');
